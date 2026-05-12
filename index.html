@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FF6B35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SpeakStar">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<title>SpeakStar - Speech Therapy for Kids</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow-x:hidden}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(160deg,#FFF9F0 0%,#FFF0E0 100%);
+    color:#2A2A2A;-webkit-font-smoothing:antialiased;
+    min-height:100vh;overscroll-behavior:none;
+  }
+  #app{max-width:440px;margin:0 auto;padding:20px 16px 32px;min-height:100vh;position:relative}
+  .screen{animation:fadeIn .3s ease-out}
+  button{font-family:inherit;cursor:pointer;border:none;outline:none}
+  
+  /* Animations */
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+  @keyframes boom{0%{transform:scale(0) rotate(-25deg);opacity:0}65%{transform:scale(1.35) rotate(6deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,53,.45)}50%{box-shadow:0 0 0 18px rgba(255,107,53,0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+  
+  /* Shared */
+  .card{background:#fff;border-radius:24px;padding:20px;margin-bottom:14px;box-shadow:0 5px 22px rgba(0,0,0,.07)}
+  .btn{display:block;width:100%;border-radius:100px;padding:16px 24px;font-size:17px;font-weight:800;text-align:center;margin-bottom:10px;transition:transform .1s;font-family:inherit}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:#FF6B35;color:#fff;animation:pulse 2s ease-in-out infinite}
+  .btn-secondary{background:#F0F0F0;color:#888}
+  .btn-orange{background:#FF6B35;color:#fff}
+  .btn-outline{background:#fff;border:2.5px solid #FF6B35;color:#FF6B35}
+  
+  /* Header */
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .back-btn{background:none;font-size:30px;color:#aaa;padding:0 4px;font-weight:300}
+  .title{font-size:24px;font-weight:900;color:#FF6B35;flex:1;margin-left:4px}
+  
+  /* Lang toggle */
+  .lang-row{display:flex;background:#F0EDE8;border-radius:99px;padding:3px;gap:2px}
+  .lang-btn{padding:5px 13px;border-radius:99px;font-size:12px;font-weight:800;color:#aaa;background:transparent;transition:all .2s}
+  .lang-btn.active{background:#fff;color:#FF6B35;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+  
+  /* Home */
+  .home-top{display:flex;justify-content:flex-end;margin-bottom:12px}
+  .mascot-wrap{text-align:center;margin-top:4px}
+  .app-name{font-size:38px;font-weight:900;color:#FF6B35;margin:10px 0 4px;line-height:1}
+  .app-name.es{font-size:30px}
+  .tagline{color:#bbb;font-size:13px;margin-bottom:24px;text-align:center}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+  .stat-card{background:#fff;border-radius:18px;padding:14px 8px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .stat-icon{font-size:24px}
+  .stat-val{font-size:28px;font-weight:900;color:#FF6B35;line-height:1.1}
+  .stat-label{font-size:10px;color:#bbb;margin-top:2px}
+  .footer{font-size:11px;color:#ccc;margin-top:8px;text-align:center}
+  
+  /* Categories grid */
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .cat-card{border-radius:22px;padding:16px 10px;text-align:center;border-width:3px;border-style:solid;position:relative;transition:transform .15s;cursor:pointer}
+  .cat-card:active{transform:scale(.96)}
+  .cat-card:hover{transform:scale(1.03)}
+  .cat-emoji{font-size:40px;line-height:1}
+  .cat-label{font-size:15px;font-weight:900;margin:6px 0 5px}
+  .cat-stars{display:flex;justify-content:center;gap:2px}
+  .cat-star{font-size:14px;opacity:.22}
+  .cat-star.on{opacity:1}
+  .cat-count{font-size:10px;color:#bbb;margin-top:3px}
+  .cat-badge{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900}
+  
+  /* Practice */
+  .practice-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+  .counter{border-radius:99px;padding:4px 12px;font-size:12px;font-weight:800}
+  .word-card{text-align:center;padding:36px 24px;animation:pop .3s ease-out}
+  .word-emoji{font-size:88px;line-height:1;margin-bottom:10px}
+  .word-text{font-size:52px;font-weight:900;color:#2A2A2A;letter-spacing:1px;font-family:'Segoe UI',sans-serif}
+  .word-hint{font-size:13px;color:#ccc;margin-top:10px}
+  .tip-toggle{background:none;border:none;font-weight:800;font-size:13px;margin-bottom:8px;padding:4px 0;cursor:pointer}
+  .tip-card{border-left:4px solid;border-radius:18px;padding:12px 16px;font-size:14px;color:#444;line-height:1.6;animation:fadeIn .25s ease-out}
+  .wave-row{display:flex;justify-content:center;align-items:flex-end;gap:4px;height:52px;margin:24px 0 18px}
+  .wave-bar{width:5px;background:#E0E0E0;border-radius:4px;height:8px;transition:height .12s ease,background .3s}
+  .wave-bar.active{background:currentColor}
+  .demo-btn{background:#F5F5F5;color:#aaa;font-size:13px;padding:11px 20px;border-radius:99px;width:100%;border:1px dashed #ddd;cursor:pointer;font-family:inherit;margin-bottom:10px}
+  .instructions{font-size:13px;color:#bbb;text-align:center;line-height:1.5;margin-top:8px}
+  
+  /* Result */
+  .result-mascot{text-align:center;margin-bottom:14px}
+  .celeb-emoji{font-size:42px;margin:8px 0 0;animation:wiggle .5s ease-out;display:inline-block}
+  .stars-result{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+  .star-result{font-size:44px;opacity:.18}
+  .star-result.on{opacity:1}
+  .star-result.on.an0{animation:boom .55s 0s ease-out both}
+  .star-result.on.an1{animation:boom .55s .2s ease-out both}
+  .star-result.on.an2{animation:boom .55s .4s ease-out both}
+  .message{font-size:16px;color:#333;line-height:1.65;text-align:center;font-weight:600}
+  .heard-row{margin-top:12px;background:#F8F8F8;border-radius:14px;padding:10px 14px;font-size:12px;color:#888;text-align:center}
+  .tip-yellow{background:#FFFBEE;border:2.5px solid #FFD60A;border-radius:24px;padding:14px;font-size:14px;color:#555;line-height:1.65;margin-bottom:14px}
+  
+  /* Loading */
+  .loading{text-align:center;padding-top:80px}
+  .spinner{width:38px;height:38px;border:4px solid #FF6B35;border-top-color:transparent;border-radius:50%;animation:spin .75s linear infinite;margin:20px auto 0}
+  .loading-text{font-size:22px;font-weight:900;color:#FF6B35;margin-top:18px}
+  
+  /* Progress */
+  .summary-card{text-align:center;padding:22px 20px}
+  .stars-count{font-size:30px;font-weight:900;color:#FF6B35;margin:10px 0 4px}
+  .words-count{color:#ccc;font-size:13px}
+  .section-label{font-size:11px;font-weight:900;color:#bbb;letter-spacing:.04em;margin-bottom:10px}
+  .prog-card{padding:13px 18px}
+  .prog-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+  .prog-emoji{font-size:20px}
+  .prog-name{font-size:14px;font-weight:900;flex:1}
+  .prog-count{font-size:12px;color:#ccc}
+  .bar-bg{background:#F0F0F0;border-radius:99px;height:10px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+  .parent-card{background:#F0FFF9;border:2px solid #06D6A0;border-radius:24px;padding:16px;margin-top:8px}
+  .parent-title{font-weight:900;color:#06D6A0;font-size:14px;margin-bottom:6px}
+  .parent-text{font-size:13px;color:#555;line-height:1.65}
+  
+  /* Mascot */
+  .mascot{animation:bounce 1.6s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//                          API KEY CONFIG
+// Replace with your Anthropic API key for real AI feedback.
+// Leave as-is for built-in offline encouragement messages (5 varied messages).
+// Get a key at: https://console.anthropic.com
+// ═══════════════════════════════════════════════════════════════════════════
+const ANTHROPIC_API_KEY = 'sk-ant-YOUR_KEY_HERE';
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          TRANSLATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+const T = {
+  en: {
+    appName: 'SpeakStar!',
+    tagline: 'Practice speaking — earn stars! ⭐',
+    startBtn: 'Start Practice! 🎤',
+    progressBtn: 'My Progress 📊',
+    stars: 'Stars', practiced: 'Practiced', mastered: 'Mastered',
+    pickSound: 'Pick a Sound',
+    words: 'words',
+    sayWord: 'Say this word out loud! 📢',
+    showTip: '💡 Show mouth tip',
+    hideTip: '💡 Hide tip',
+    tapSpeak: '🎤 Tap to Speak!',
+    listening: '🎤 Listening...',
+    demoMode: 'Skip mic (demo)',
+    nextWord: 'Next Word →',
+    tryAgain: 'Try Again 🔄',
+    backToSounds: 'Back to Sounds',
+    checking: 'Checking your speech...',
+    heard: 'Heard',
+    target: 'Target',
+    myProgress: 'My Progress',
+    soundCategories: 'SOUND CATEGORIES',
+    parentNote: '👨‍👩‍👧 Parent Note',
+    parentDefault: 'Start practicing to build progress! Aim for 5–10 words per day for best results.',
+    parentActive: (n) => `Great work! ${n} words practiced. Daily sessions of 5–10 minutes show the best improvement.`,
+    instructions: 'Tap the button, say the word clearly, get feedback!',
+    srLang: 'en-US',
+    aiPrompt: (cat, word, spoken, hint) =>
+      `You are a warm speech therapy assistant for children 4-10. The child practicing "${cat}" attempted to say "${word}". The mic heard: "${spoken}". Tip: "${hint}". Be encouraging. Stars: 3=very close, 2=good effort, 1=keep trying. Bias to 2-3.\nRespond ONLY JSON: {"message":"2 short encouraging sentences IN ENGLISH","tip":"one kid-friendly pronunciation tip IN ENGLISH","stars":2,"celebEmoji":"🎉"}`,
+  },
+  es: {
+    appName: '¡HablaEstrella!',
+    tagline: '¡Practica hablar — gana estrellas! ⭐',
+    startBtn: '¡Empezar práctica! 🎤',
+    progressBtn: 'Mi Progreso 📊',
+    stars: 'Estrellas', practiced: 'Practicadas', mastered: 'Dominadas',
+    pickSound: 'Elige un Sonido',
+    words: 'palabras',
+    sayWord: '¡Di esta palabra en voz alta! 📢',
+    showTip: '💡 Ver consejo',
+    hideTip: '💡 Ocultar consejo',
+    tapSpeak: '🎤 ¡Toca para hablar!',
+    listening: '🎤 Escuchando...',
+    demoMode: 'Modo demo (sin micrófono)',
+    nextWord: 'Siguiente →',
+    tryAgain: 'Intentar de nuevo 🔄',
+    backToSounds: 'Volver a sonidos',
+    checking: 'Analizando tu voz...',
+    heard: 'Escuché',
+    target: 'Objetivo',
+    myProgress: 'Mi Progreso',
+    soundCategories: 'CATEGORÍAS DE SONIDOS',
+    parentNote: '👨‍👩‍👧 Nota para padres',
+    parentDefault: '¡Empieza a practicar! Intenta 5–10 palabras al día para mejores resultados.',
+    parentActive: (n) => `¡Excelente! ${n} palabras practicadas. La práctica diaria de 5–10 minutos muestra la mejor mejora.`,
+    instructions: '¡Toca el botón, di la palabra, recibe retroalimentación!',
+    srLang: 'es-MX',
+    aiPrompt: (cat, word, spoken, hint) =>
+      `Eres un asistente de terapia del habla para niños de 4 a 10 años. El niño practicando "${cat}" intentó decir "${word}". El micrófono escuchó: "${spoken}". Consejo: "${hint}". Sé alentador. Estrellas: 3=muy cerca, 2=buen esfuerzo, 1=sigue intentando. Inclínate por 2-3.\nResponde SOLO JSON: {"message":"2 frases cortas de aliento EN ESPAÑOL","tip":"un consejo de pronunciación EN ESPAÑOL","stars":2,"celebEmoji":"🎉"}`,
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          SOUND CATEGORIES
+// ═══════════════════════════════════════════════════════════════════════════
+const CATEGORIES = {
+  en: [
+    { id:'s', label:'S Sound', emoji:'🐍', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Make your teeth touch and blow air gently — like a snake hissing!',
+      words:[{w:'sun',e:'☀️'},{w:'snake',e:'🐍'},{w:'star',e:'⭐'},{w:'smile',e:'😊'},{w:'soap',e:'🧼'}] },
+    { id:'r', label:'R Sound', emoji:'🌈', color:'#00B4D8', bg:'#E8F7FB',
+      hint:"Curl your tongue back a little — don't let it touch your teeth!",
+      words:[{w:'rabbit',e:'🐰'},{w:'rainbow',e:'🌈'},{w:'rocket',e:'🚀'},{w:'robot',e:'🤖'},{w:'rose',e:'🌹'}] },
+    { id:'l', label:'L Sound', emoji:'🦁', color:'#F5A623', bg:'#FEF9EE',
+      hint:'Touch the tip of your tongue to the top of your mouth, just behind your front teeth!',
+      words:[{w:'lion',e:'🦁'},{w:'leaf',e:'🍃'},{w:'lamp',e:'💡'},{w:'ladybug',e:'🐞'},{w:'lemon',e:'🍋'}] },
+    { id:'th', label:'TH Sound', emoji:'🦷', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'Stick your tongue out just a tiny bit between your teeth and blow!',
+      words:[{w:'three',e:'3️⃣'},{w:'thumb',e:'👍'},{w:'thunder',e:'⛈️'},{w:'think',e:'💭'},{w:'thread',e:'🧵'}] },
+    { id:'sh', label:'SH Sound', emoji:'🐚', color:'#06D6A0', bg:'#EAFBF6',
+      hint:"Round your lips a little and blow — like you're telling someone to be quiet!",
+      words:[{w:'ship',e:'🚢'},{w:'shoe',e:'👟'},{w:'shark',e:'🦈'},{w:'shell',e:'🐚'},{w:'sheep',e:'🐑'}] },
+    { id:'ch', label:'CH Sound', emoji:'🚂', color:'#F72585', bg:'#FEE8F2',
+      hint:'Put your teeth together and make a little puff of air — like a train starting!',
+      words:[{w:'chair',e:'🪑'},{w:'cheese',e:'🧀'},{w:'chicken',e:'🐔'},{w:'cherry',e:'🍒'},{w:'chocolate',e:'🍫'}] },
+    { id:'b', label:'B Sound', emoji:'🎈', color:'#3A86FF', bg:'#EEF4FF',
+      hint:'Press your lips together and pop them open with your voice on!',
+      words:[{w:'ball',e:'⚽'},{w:'bear',e:'🐻'},{w:'banana',e:'🍌'},{w:'bird',e:'🐦'},{w:'boat',e:'⛵'}] },
+    { id:'p', label:'P Sound', emoji:'🐧', color:'#C77DFF', bg:'#F5EEFF',
+      hint:'Press your lips together and pop them open — like B but without your voice!',
+      words:[{w:'pig',e:'🐷'},{w:'pizza',e:'🍕'},{w:'penguin',e:'🐧'},{w:'pear',e:'🍐'},{w:'purple',e:'💜'}] },
+  ],
+  es: [
+    { id:'rr', label:'Sonido RR', emoji:'🐯', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Pon la punta de tu lengua detrás de los dientes de arriba y hazla vibrar — ¡como un motor!',
+      words:[{w:'perro',e:'🐕'},{w:'tierra',e:'🌍'},{w:'carro',e:'🚗'},{w:'arroz',e:'🍚'},{w:'guitarra',e:'🎸'}] },
+    { id:'n_t', label:'Sonido Ñ', emoji:'🇲🇽', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'Pon tu lengua en el paladar como para la N, ¡pero apriétala un poco más!',
+      words:[{w:'niño',e:'👦'},{w:'piña',e:'🍍'},{w:'baño',e:'🛁'},{w:'año',e:'📅'},{w:'mañana',e:'🌅'}] },
+    { id:'s_es', label:'Sonido S', emoji:'🐍', color:'#00B4D8', bg:'#E8F7FB',
+      hint:'Junta los dientes suavemente y sopla el aire — ¡como una serpiente!',
+      words:[{w:'sol',e:'☀️'},{w:'sopa',e:'🍲'},{w:'sapo',e:'🐸'},{w:'silla',e:'🪑'},{w:'sirena',e:'🧜'}] },
+    { id:'ll', label:'Sonido LL', emoji:'🌧️', color:'#06D6A0', bg:'#EAFBF6',
+      hint:'Coloca tu lengua en el centro del paladar y deja salir el aire por los lados.',
+      words:[{w:'lluvia',e:'🌧️'},{w:'llama',e:'🦙'},{w:'llave',e:'🔑'},{w:'pollo',e:'🍗'},{w:'sello',e:'📬'}] },
+    { id:'j', label:'Sonido J', emoji:'🦒', color:'#F5A623', bg:'#FEF9EE',
+      hint:'Haz un sonido suave en la garganta, como si hicieras gárgaras muy suaves.',
+      words:[{w:'jirafa',e:'🦒'},{w:'ojo',e:'👁️'},{w:'jugo',e:'🧃'},{w:'rojo',e:'🔴'},{w:'reloj',e:'⌚'}] },
+    { id:'d_es', label:'Sonido D', emoji:'🦷', color:'#F72585', bg:'#FEE8F2',
+      hint:'Pon la punta de tu lengua detrás de los dientes superiores y tócalos suavemente.',
+      words:[{w:'dedo',e:'👆'},{w:'dado',e:'🎲'},{w:'disco',e:'💿'},{w:'duende',e:'🧝'},{w:'dulce',e:'🍬'}] },
+    { id:'b_es', label:'Sonido B/V', emoji:'🎈', color:'#3A86FF', bg:'#EEF4FF',
+      hint:'Junta los labios y ábrelos con voz — la B y la V suenan casi igual en español.',
+      words:[{w:'barco',e:'⛵'},{w:'vaca',e:'🐄'},{w:'bota',e:'👢'},{w:'ventana',e:'🪟'},{w:'bebé',e:'👶'}] },
+    { id:'p_es', label:'Sonido P', emoji:'🐧', color:'#C77DFF', bg:'#F5EEFF',
+      hint:'Junta los labios y ábrelos de golpe — ¡sin vibrar la garganta!',
+      words:[{w:'papá',e:'👨'},{w:'pato',e:'🦆'},{w:'piña',e:'🍍'},{w:'pulpo',e:'🐙'},{w:'pelota',e:'⚽'}] },
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          OFFLINE FEEDBACK
+// ═══════════════════════════════════════════════════════════════════════════
+const OFFLINE = {
+  en: [
+    { message:"Awesome try! You're getting better every time. ⭐", tip:'Say the word slowly, one sound at a time.', stars:3, celebEmoji:'🌟' },
+    { message:'Way to go! Your hard work is paying off!', tip:'Try saying the word in front of a mirror.', stars:2, celebEmoji:'🎉' },
+    { message:"You're a superstar! Keep it up!", tip:'Take a deep breath before saying the word.', stars:3, celebEmoji:'⭐' },
+    { message:'Great job! That was a really good try.', tip:'Listen carefully — does it sound right? Try once more!', stars:2, celebEmoji:'🎊' },
+    { message:'Wonderful! Every practice makes you stronger.', tip:'Slow down and feel where your tongue and lips go.', stars:3, celebEmoji:'💪' },
+  ],
+  es: [
+    { message:'¡Buen intento! Cada vez lo haces mejor. ⭐', tip:'Di la palabra despacio, un sonido a la vez.', stars:3, celebEmoji:'🌟' },
+    { message:'¡Muy bien! ¡Tu esfuerzo está dando resultado!', tip:'Mírate en un espejo mientras dices la palabra.', stars:2, celebEmoji:'🎉' },
+    { message:'¡Eres una superestrella! ¡Sigue así!', tip:'Respira profundo antes de decir la palabra.', stars:3, celebEmoji:'⭐' },
+    { message:'¡Excelente! Fue un intento muy bueno.', tip:'¿Te oíste bien? ¡Inténtalo otra vez!', stars:2, celebEmoji:'🎊' },
+    { message:'¡Maravilloso! Con cada práctica te haces más fuerte.', tip:'Despacio — siente dónde van tu lengua y tus labios.', stars:3, celebEmoji:'💪' },
+  ]
+};
+
+function offlineFeedback(lang) {
+  const arr = OFFLINE[lang];
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+async function getAIFeedback(lang, cat, word, spoken) {
+  if (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'sk-ant-YOUR_KEY_HERE') {
+    return offlineFeedback(lang);
+  }
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role:'user', content: T[lang].aiPrompt(cat.label, word.w, spoken, cat.hint) }],
+      }),
+    });
+    const data = await r.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    return JSON.parse(raw.replace(/```json|```/g, '').trim());
+  } catch (e) {
+    return offlineFeedback(lang);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          STATE & STORAGE
+// ═══════════════════════════════════════════════════════════════════════════
+const state = {
+  lang: localStorage.getItem('lang') || 'en',
+  totalStars: parseInt(localStorage.getItem('totalStars') || '0'),
+  wordsDone: parseInt(localStorage.getItem('wordsDone') || '0'),
+  catProg: JSON.parse(localStorage.getItem('catProg') || '{}'),
+  screen: 'home',
+  cat: null,
+  wordIdx: 0,
+  spoken: null,
+  feedback: null,
+  isRecording: false,
+  isLoading: false,
+  showTip: false,
+};
+
+function save() {
+  localStorage.setItem('lang', state.lang);
+  localStorage.setItem('totalStars', state.totalStars);
+  localStorage.setItem('wordsDone', state.wordsDone);
+  localStorage.setItem('catProg', JSON.stringify(state.catProg));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          MASCOT SVG
+// ═══════════════════════════════════════════════════════════════════════════
+function mascot(size = 80, wink = false) {
+  return `
+  <svg class="mascot" width="${size}" height="${size}" viewBox="0 0 80 80" style="display:block;margin:0 auto">
+    <circle cx="40" cy="44" r="30" fill="#FFD60A"/>
+    <polygon points="40,14 48,26 32,26" fill="#FFD60A"/>
+    <circle cx="40" cy="13" r="8" fill="#FFD60A"/>
+    <polygon points="40,5 44,13 36,13" fill="#FF6B35"/>
+    <ellipse cx="29" cy="38" rx="5" ry="5.5" fill="#2D2D2D"/>
+    <ellipse cx="51" cy="38" rx="5" ry="${wink ? 1.5 : 5.5}" fill="#2D2D2D"/>
+    <circle cx="31" cy="36" r="2" fill="#fff"/>
+    ${!wink ? '<circle cx="53" cy="36" r="2" fill="#fff"/>' : ''}
+    <path d="M28 54 Q40 65 52 54" stroke="#2D2D2D" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="21" cy="50" r="7" fill="#FF6B35" opacity="0.3"/>
+    <circle cx="59" cy="50" r="7" fill="#FF6B35" opacity="0.3"/>
+  </svg>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function langToggle() {
+  const t = T[state.lang];
+  return `
+    <div class="lang-row">
+      <button class="lang-btn ${state.lang === 'en' ? 'active' : ''}" onclick="setLang('en')">🇺🇸 EN</button>
+      <button class="lang-btn ${state.lang === 'es' ? 'active' : ''}" onclick="setLang('es')">🇲🇽 ES</button>
+    </div>`;
+}
+
+function renderHome() {
+  const t = T[state.lang];
+  const mastered = Object.values(state.catProg).filter(v => v >= 3).length;
+  return `
+    <div class="screen">
+      <div class="home-top">${langToggle()}</div>
+      <div class="mascot-wrap">${mascot(120)}</div>
+      <h1 class="app-name ${state.lang}">${t.appName}</h1>
+      <p class="tagline">${t.tagline}</p>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-val">${state.totalStars}</div>
+          <div class="stat-label">${t.stars}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-val">${state.wordsDone}</div>
+          <div class="stat-label">${t.practiced}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-val">${mastered}</div>
+          <div class="stat-label">${t.mastered}</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="go('categories')">${t.startBtn}</button>
+      <button class="btn btn-secondary" onclick="go('progress')">${t.progressBtn}</button>
+      <p class="footer">Powered by AI · ${state.lang === 'es' ? 'Español e Inglés' : 'English & Spanish'}</p>
+    </div>`;
+}
+
+function renderCategories() {
+  const t = T[state.lang];
+  const cats = CATEGORIES[state.lang];
+  return `
+    <div class="screen">
+      <div class="top-bar">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="back-btn" onclick="go('home')">‹</button>
+          <h2 class="title">${t.pickSound}</h2>
+        </div>
+        ${langToggle()}
+      </div>
+      <div class="cat-grid">
+        ${cats.map(c => {
+          const prog = state.catProg[c.id] || 0;
+          return `
+            <div class="cat-card" style="background:${c.bg};border-color:${c.color}55" onclick="selectCat('${c.id}')">
+              ${prog >= 3 ? `<div class="cat-badge" style="background:${c.color}">✓</div>` : ''}
+              <div class="cat-emoji">${c.emoji}</div>
+              <div class="cat-label" style="color:${c.color}">${c.label}</div>
+              <div class="cat-stars">
+                <span class="cat-star ${prog >= 1 ? 'on' : ''}">⭐</span>
+                <span class="cat-star ${prog >= 2 ? 'on' : ''}">⭐</span>
+                <span class="cat-star ${prog >= 3 ? 'on' : ''}">⭐</span>
+              </div>
+              <div class="cat-count">${c.words.length} ${t.words}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function renderPractice() {
+  const t = T[state.lang];
+  const cat = state.cat;
+  const word = cat.words[state.wordIdx];
+  return `
+    <div class="screen">
+      <div class="practice-header">
+        <button class="back-btn" onclick="go('categories')">‹</button>
+        <div style="font-weight:900;color:${cat.color};font-size:16px">${cat.label}</div>
+        <div class="counter" style="background:${cat.bg};color:${cat.color}">${state.wordIdx + 1}/${cat.words.length}</div>
+      </div>
+      <div class="card word-card">
+        <div class="word-emoji">${word.e}</div>
+        <div class="word-text">${word.w}</div>
+        <div class="word-hint">${t.sayWord}</div>
+      </div>
+      <button class="tip-toggle" style="color:${cat.color}" onclick="toggleTip()">
+        ${state.showTip ? t.hideTip : t.showTip}
+      </button>
+      ${state.showTip ? `<div class="tip-card" style="background:${cat.bg};border-left-color:${cat.color}">${cat.hint}</div>` : ''}
+      <div class="wave-row" id="waveRow" style="color:${cat.color}">
+        ${Array(9).fill(0).map(() => '<div class="wave-bar"></div>').join('')}
+      </div>
+      <button class="btn ${state.isRecording ? 'btn-secondary' : 'btn-orange'}" 
+              style="${!state.isRecording ? `background:${cat.color};animation:pulse 2s ease-in-out infinite` : ''}"
+              onclick="${state.isRecording ? 'stopRecording()' : 'startRecording()'}">
+        ${state.isRecording ? t.listening : t.tapSpeak}
+      </button>
+      <button class="demo-btn" onclick="submitSpeech('${word.w}')">${t.demoMode}</button>
+      <p class="instructions">${t.instructions}</p>
+    </div>`;
+}
+
+function renderResult() {
+  const t = T[state.lang];
+  if (state.isLoading) {
+    return `
+      <div class="screen loading">
+        ${mascot(100)}
+        <div class="loading-text">${t.checking}</div>
+        <div class="spinner"></div>
+      </div>`;
+  }
+  const fb = state.feedback;
+  const cat = state.cat;
+  const word = cat.words[state.wordIdx];
+  return `
+    <div class="screen">
+      <div class="result-mascot">
+        ${mascot(88, fb.stars === 3)}
+        <div class="celeb-emoji">${fb.celebEmoji || '🎉'}</div>
+      </div>
+      <div class="stars-result">
+        <span class="star-result ${fb.stars >= 1 ? 'on an0' : ''}">⭐</span>
+        <span class="star-result ${fb.stars >= 2 ? 'on an1' : ''}">⭐</span>
+        <span class="star-result ${fb.stars >= 3 ? 'on an2' : ''}">⭐</span>
+      </div>
+      <div class="card" style="text-align:center">
+        <p class="message">${fb.message}</p>
+        ${state.spoken && state.spoken !== word.w ? `
+          <div class="heard-row">
+            ${t.heard}: <strong>"${state.spoken}"</strong> · ${t.target}: <strong>"${word.w}"</strong>
+          </div>
+        ` : ''}
+      </div>
+      <div class="tip-yellow">💡 ${fb.tip}</div>
+      <button class="btn" style="background:${cat.color};color:#fff" onclick="nextWord()">${t.nextWord}</button>
+      <button class="btn btn-outline" style="border-color:${cat.color};color:${cat.color}" onclick="retryWord()">${t.tryAgain}</button>
+      <button class="btn btn-secondary" onclick="go('categories')">${t.backToSounds}</button>
+    </div>`;
+}
+
+function renderProgress() {
+  const t = T[state.lang];
+  const cats = CATEGORIES[state.lang];
+  return `
+    <div class="screen">
+      <div class="top-bar">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="back-btn" onclick="go('home')">‹</button>
+          <h2 class="title">${t.myProgress}</h2>
+        </div>
+        ${langToggle()}
+      </div>
+      <div class="card summary-card">
+        ${mascot(72)}
+        <div class="stars-count">${state.totalStars} ${t.stars}! ⭐</div>
+        <div class="words-count">${state.wordsDone} ${t.practiced}</div>
+      </div>
+      <div class="section-label">${t.soundCategories}</div>
+      ${cats.map(c => {
+        const prog = state.catProg[c.id] || 0;
+        return `
+          <div class="card prog-card">
+            <div class="prog-row">
+              <span class="prog-emoji">${c.emoji}</span>
+              <span class="prog-name" style="color:${c.color}">${c.label}</span>
+              <span class="prog-count">${prog}/3 ⭐</span>
+            </div>
+            <div class="bar-bg">
+              <div class="bar-fill" style="background:${c.color};width:${(prog/3)*100}%"></div>
+            </div>
+          </div>`;
+      }).join('')}
+      <div class="parent-card">
+        <div class="parent-title">${t.parentNote}</div>
+        <div class="parent-text">
+          ${state.wordsDone === 0 ? t.parentDefault : t.parentActive(state.wordsDone)}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          MAIN RENDER & ACTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function render() {
+  const app = document.getElementById('app');
+  switch(state.screen) {
+    case 'home': app.innerHTML = renderHome(); break;
+    case 'categories': app.innerHTML = renderCategories(); break;
+    case 'practice': app.innerHTML = renderPractice(); break;
+    case 'result': app.innerHTML = renderResult(); break;
+    case 'progress': app.innerHTML = renderProgress(); break;
+  }
+  window.scrollTo(0, 0);
+}
+
+function go(screen) {
+  state.screen = screen;
+  state.showTip = false;
+  render();
+}
+
+function setLang(lang) {
+  state.lang = lang;
+  state.cat = null;
+  state.feedback = null;
+  save();
+  render();
+}
+
+function selectCat(id) {
+  state.cat = CATEGORIES[state.lang].find(c => c.id === id);
+  state.wordIdx = 0;
+  state.feedback = null;
+  state.showTip = false;
+  go('practice');
+}
+
+function toggleTip() {
+  state.showTip = !state.showTip;
+  render();
+}
+
+function nextWord() {
+  state.wordIdx = (state.wordIdx + 1) % state.cat.words.length;
+  state.feedback = null;
+  state.spoken = null;
+  state.showTip = false;
+  go('practice');
+}
+
+function retryWord() {
+  state.feedback = null;
+  state.spoken = null;
+  state.showTip = false;
+  go('practice');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          SPEECH RECOGNITION
+// ═══════════════════════════════════════════════════════════════════════════
+let recognition = null;
+let waveInterval = null;
+
+function startWaveAnim() {
+  const bars = document.querySelectorAll('.wave-bar');
+  waveInterval = setInterval(() => {
+    bars.forEach(b => {
+      b.style.height = (6 + Math.random() * 38) + 'px';
+      b.classList.add('active');
+    });
+  }, 120);
+}
+
+function stopWaveAnim() {
+  if (waveInterval) clearInterval(waveInterval);
+  waveInterval = null;
+  document.querySelectorAll('.wave-bar').forEach(b => {
+    b.style.height = '8px';
+    b.classList.remove('active');
+  });
+}
+
+function startRecording() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    // Fallback: just go straight to result with target word
+    submitSpeech(state.cat.words[state.wordIdx].w);
+    return;
+  }
+  recognition = new SR();
+  recognition.lang = T[state.lang].srLang;
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.onresult = (e) => {
+    const text = e.results[0][0].transcript.toLowerCase().trim();
+    state.isRecording = false;
+    stopWaveAnim();
+    submitSpeech(text);
+  };
+  recognition.onerror = () => {
+    state.isRecording = false;
+    stopWaveAnim();
+    submitSpeech(state.cat.words[state.wordIdx].w);
+  };
+  recognition.onend = () => {
+    state.isRecording = false;
+    stopWaveAnim();
+    render();
+  };
+  try {
+    recognition.start();
+    state.isRecording = true;
+    render();
+    setTimeout(startWaveAnim, 100);
+  } catch (e) {
+    submitSpeech(state.cat.words[state.wordIdx].w);
+  }
+}
+
+function stopRecording() {
+  if (recognition) { try { recognition.stop(); } catch(e) {} }
+  state.isRecording = false;
+  stopWaveAnim();
+  render();
+}
+
+async function submitSpeech(spoken) {
+  state.spoken = spoken;
+  state.isLoading = true;
+  state.screen = 'result';
+  render();
+  const word = state.cat.words[state.wordIdx];
+  const fb = await getAIFeedback(state.lang, state.cat, word, spoken);
+  state.feedback = fb;
+  state.totalStars += fb.stars;
+  state.wordsDone += 1;
+  state.catProg[state.cat.id] = Math.min(3, (state.catProg[state.cat.id] || 0) + (fb.stars >= 2 ? 1 : 0));
+  state.isLoading = false;
+  save();
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                          INIT
+// ═══════════════════════════════════════════════════════════════════════════
+render();
+
+// Register service worker for PWA install (optional)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
