@@ -1,106 +1,178 @@
-# SpeakStar PWA — Speech Therapy App
+# HablaEstrella / SpeakStar — App de Terapia del Habla 🌟
 
-A complete bilingual (English/Spanish) speech therapy app as a Progressive Web App.
-**No build process, no npm install, no Expo.**
-
----
-
-## 🚀 3 ways to use it (pick one)
-
-### ⚡ Option 1: Test in 30 seconds on your computer
-1. Just **double-click `index.html`**
-2. Opens in your browser, fully working
-
-> ⚠️ Speech recognition only works when served over HTTPS (or localhost). When testing by double-clicking, the mic won't work — only the **"Skip mic (demo)"** button does. To test speech, use Option 2 or 3.
+App bilingüe (español/inglés) de terapia del habla para niños. PWA — funciona en cualquier teléfono Android o iOS, no requiere instalación de SDK ni dependencias.
 
 ---
 
-### 🌐 Option 2: Get it on your phone — RECOMMENDED (5 minutes)
+## 📦 ¿Qué está incluido?
 
-This gives you a real URL anyone can visit, AND lets you install it to your phone's home screen like a real app.
+### App principal (PWA)
+- **`index.html`** — Punto de entrada de la app
+- **`data.js`** — Todo el contenido (sonidos, trabalenguas, frases, traducciones)
+- **`app.js`** — Lógica de la app (pantallas, micrófono, AI)
+- **`manifest.json`** — Configuración PWA para instalar en teléfono
+- **`sw.js`** — Service worker (funciona sin internet)
+- **`icon-192.png`, `icon-512.png`, `icon.png`** — Íconos
 
-1. Go to **https://app.netlify.com/drop** in your browser
-2. **Drag this whole `SpeakStarPWA` folder** into the page
-3. Wait ~30 seconds — Netlify gives you a URL like `https://random-words-12345.netlify.app`
-4. On your phone, open that URL in **Chrome**
-5. In Chrome's menu (⋮), tap **"Add to Home screen"** or **"Install app"**
-6. Now SpeakStar is on your home screen like a real app!
+### Módulos de práctica
+- **🔤 Sonidos** — 8 categorías en español (RR, Ñ, S, LL, J, D, B/V, P), 10 palabras cada una = **80 palabras**
+- **🌀 Trabalenguas** — 8 trabalenguas clásicos en español (Tres tristes tigres, Pablito clavó, Erre con erre, etc.)
+- **💬 Frases** — 6 temas (Familia, Escuela, Mi Día, Animales, Comida, Colores)
+- **📚 Para Padres** — Enlace a artículos SEO
 
-✅ Microphone works (real Web Speech API)
-✅ Saves progress between sessions
-✅ Works offline after first load
-✅ Looks and feels like a native app
+### Contenido SEO (Spanish)
+Carpeta `articulos/` con 8 artículos optimizados para Google:
+1. **dislalia-infantil.html** — "¿Qué es la dislalia infantil?"
+2. **edad-hablar-bien.html** — "¿A qué edad debe hablar bien un niño?"
+3. **ensenar-pronunciar-r.html** — "Cómo enseñar a pronunciar la R"
+4. **ejercicios-logopedia-casa.html** — "10 ejercicios de logopedia en casa"
+5. **cuando-preocuparse-habla.html** — "¿Cuándo preocuparse?"
+6. **tartamudez-infantil.html** — "Tartamudez infantil"
+7. **estimular-lenguaje-2-5.html** — "Estimular el lenguaje 2-5 años"
+8. **trabalenguas-ninos.html** — "Trabalenguas para niños"
+
+### Legales (requeridos por Play Store)
+- **`privacy.html`** — Política de Privacidad
+- **`terms.html`** — Términos de Uso
+
+### SEO técnico
+- **`sitemap.xml`** — Para que Google indexe todo
+- **`robots.txt`** — Permisos de crawlers
 
 ---
 
-### 📱 Option 3: Real APK for Google Play Store (15 minutes)
+## 🚀 Subir a Vercel (5 minutos)
 
-Once you've done Option 2 and you have your Netlify URL:
+1. Ve a **https://vercel.com/new**
+2. Arrastra la carpeta `SpeakStarPWA` completa
+3. Click en "Deploy"
+4. ✅ Tu app tiene una URL como `https://speakstar-xxx.vercel.app`
 
-1. Go to **https://www.pwabuilder.com**
-2. Paste your Netlify URL
-3. Click **Start**
-4. Click the **Android** tab
-5. Click **Generate Package**
-6. Download the `.apk` and `.aab` files
-7. Use the `.apk` to share with anyone, or upload the `.aab` to Google Play Console
-
-PWABuilder is a free Microsoft tool that wraps PWAs into proper Android/iOS apps. The output is a real native APK — same as any other app in the Play Store.
+Esa URL ya es:
+- 📱 Una app instalable en teléfonos (Add to Home Screen)
+- 🌐 Un sitio web con SEO
+- 📚 Un blog de artículos para padres
 
 ---
 
-## 🔑 Add real AI feedback (optional)
+## 📱 Generar APK para Google Play Store
 
-The app works with built-in offline encouragement messages. For personalized Claude AI feedback:
+1. Ve a **https://www.pwabuilder.com**
+2. Pega tu URL de Vercel
+3. Click "Start" → tab Android → "Generate Package"
+4. Descarga el archivo `.aab`
+5. Sube a Google Play Console
 
-1. Get a key at https://console.anthropic.com (free credits available)
-2. Open `index.html` in any text editor (Notepad works)
-3. Find the line near the top:
-   ```
+**URLs requeridas por Play Store (ya están listas):**
+- Privacy Policy: `https://tu-url.vercel.app/privacy.html`
+- Terms of Use: `https://tu-url.vercel.app/terms.html`
+
+---
+
+## 🔑 Activar AI feedback (opcional)
+
+La app funciona con mensajes de aliento pregrabados. Para retroalimentación personalizada con Claude AI:
+
+1. Obtén una clave en https://console.anthropic.com (tiene créditos gratis)
+2. Abre `data.js` en un editor
+3. Encuentra la línea:
+   ```js
    const ANTHROPIC_API_KEY = 'sk-ant-YOUR_KEY_HERE';
    ```
-4. Replace with your real key
-5. Save the file
-6. Re-upload to Netlify (drag the updated folder again)
+4. Reemplaza con tu clave
+5. Sube los archivos actualizados a Vercel
 
-⚠️ **Don't put your API key in a public app.** For Play Store release, move the key to a backend server (see commented code in api section).
-
----
-
-## 🎯 What's included
-
-- 8 English sound categories (S, R, L, TH, SH, CH, B, P) — 40 words total
-- 8 Spanish sound categories (RR, Ñ, S, LL, J, D, B/V, P) — 40 words total  
-- Real microphone speech recognition (Web Speech API)
-- AI feedback with Anthropic Claude (optional)
-- 5 varied offline encouragement messages in each language (fallback)
-- Mascot character + animations
-- Star rewards system
-- Progress tracking per sound category
-- Bilingual UI with language toggle
-- Saves progress in browser storage
-- Works offline as installed PWA
-- Parent guidance notes
+⚠️ **Para producción**: la clave queda visible en el código del navegador. Antes de publicar al público, mueve la clave a un backend (ej. una función serverless en Vercel).
 
 ---
 
-## 📁 What's in this folder
+## ✏️ Modificar el contenido
 
-- `index.html` — The entire app (just open it!)
-- `manifest.json` — Tells phones how to install it as an app
-- `sw.js` — Service worker for offline support
-- `icon-192.png`, `icon-512.png`, `icon.png` — App icons
-- `README.md` — This file
+### Cambiar nombre de la app
+Edita `manifest.json` (campos `name`, `short_name`) y `data.js` (campo `appName`).
+
+### Agregar más palabras a un sonido
+En `data.js`, encuentra la categoría (ej. `rr`) y agrega más palabras al array `words`:
+```js
+{w:'nuevapalabra', e:'🎯'}
+```
+
+### Agregar un nuevo trabalenguas
+En `data.js`, en `TWISTERS.es`, agrega un nuevo objeto siguiendo el formato existente.
+
+### Agregar un nuevo artículo SEO
+1. Copia uno de los archivos en `articulos/` (ej. `dislalia-infantil.html`)
+2. Cambia el contenido, título, meta tags
+3. Agrégalo a `articulos/index.html` (el hub)
+4. Agrégalo a `sitemap.xml`
 
 ---
 
-## ✅ Why this is better than the React Native version
+## 📊 SEO: Lo que está implementado
 
-- No dev environment setup needed
-- No npm install / SDK version errors
-- No Expo Go bugs to fight
-- Works on Android, iOS, and any computer
-- Real speech recognition (not just recording)
-- Easier to update — just edit the HTML
-- Free hosting on Netlify forever
-- Can still be turned into a Play Store APK via PWABuilder
+Cada artículo tiene:
+- ✅ `<title>` y `<meta description>` optimizados
+- ✅ `<meta keywords>` relevantes
+- ✅ `<link rel="canonical">` 
+- ✅ Open Graph tags para redes sociales
+- ✅ Schema.org JSON-LD (Article schema)
+- ✅ Headings jerárquicos (h1, h2, h3)
+- ✅ Tabla de contenido con anchors
+- ✅ Enlaces internos a artículos relacionados
+- ✅ CTA hacia la app
+- ✅ Listo para Google Search Console
+
+**Palabras clave de alta búsqueda + baja competencia en español** (perfectas para posicionar):
+- "dislalia infantil"
+- "cómo enseñar la R a un niño"
+- "ejercicios de logopedia en casa"
+- "a qué edad debe hablar un niño"
+- "trabalenguas para niños"
+
+---
+
+## 📈 Próximos pasos sugeridos
+
+- [ ] Verifica el sitio en Google Search Console (envía sitemap.xml)
+- [ ] Comparte en Facebook groups de "padres con niños con problemas del habla"
+- [ ] Crea cuentas de Instagram/TikTok para HablaEstrella
+- [ ] Considera AdSense en los artículos (pero NO en la app)
+- [ ] Implementa un modelo freemium (algunos sonidos gratis, otros premium)
+- [ ] Agrega más artículos SEO (objetivo: 20-30 artículos en 6 meses)
+- [ ] Construye backlinks contactando blogs de logopedia
+
+---
+
+## 📧 Contacto
+
+Email: oscar.mora2347@alumnos.udg.mx
+
+---
+
+**Estructura final del proyecto:**
+
+```
+SpeakStarPWA/
+├── index.html          ← La app
+├── data.js             ← Contenido
+├── app.js              ← Lógica
+├── manifest.json       ← PWA config
+├── sw.js               ← Service worker
+├── icon-*.png          ← Íconos
+├── privacy.html        ← Privacidad
+├── terms.html          ← Términos
+├── sitemap.xml         ← SEO
+├── robots.txt          ← SEO
+├── README.md           ← Esto
+└── articulos/
+    ├── style.css       ← Estilos compartidos
+    ├── index.html      ← Hub de artículos
+    ├── dislalia-infantil.html
+    ├── edad-hablar-bien.html
+    ├── ensenar-pronunciar-r.html
+    ├── ejercicios-logopedia-casa.html
+    ├── cuando-preocuparse-habla.html
+    ├── tartamudez-infantil.html
+    ├── estimular-lenguaje-2-5.html
+    └── trabalenguas-ninos.html
+```

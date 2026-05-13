@@ -1,24 +1,38 @@
 {
-  "name": "SpeakStar",
-  "short_name": "SpeakStar",
-  "description": "Bilingual speech therapy app for kids — English & Spanish",
+  "name": "HablaEstrella · SpeakStar — Terapia del Habla",
+  "short_name": "HablaEstrella",
+  "description": "App bilingüe (español/inglés) de terapia del habla para niños. Practica sonidos, trabalenguas y frases con retroalimentación AI.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFF9F0",
   "theme_color": "#FF6B35",
+  "lang": "es",
+  "categories": ["education", "kids", "health"],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

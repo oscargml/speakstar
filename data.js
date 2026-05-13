@@ -1,0 +1,370 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//   API KEY - Replace with your Anthropic API key for AI feedback
+//   Get one at: https://console.anthropic.com (free credits available)
+//   Leave as 'sk-ant-YOUR_KEY_HERE' to use offline encouragement messages
+// ═══════════════════════════════════════════════════════════════════════════
+const ANTHROPIC_API_KEY = 'sk-ant-YOUR_KEY_HERE';
+
+// ═══════════════════════════════════════════════════════════════════════════
+//   TRANSLATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+const T = {
+  en: {
+    appName:'SpeakStar!', tagline:'Practice speaking — earn stars! ⭐',
+    startBtn:'Start Practice! 🎤', progressBtn:'My Progress 📊',
+    stars:'Stars', practiced:'Practiced', mastered:'Mastered',
+    pickModule:'Pick a Module',
+    modSounds:'Sounds', modSoundsSub:'Practice tricky letters',
+    modTwisters:'Tongue Twisters', modTwistersSub:'Fun speech challenges',
+    modSentences:'Sentences', modSentencesSub:'Speak in phrases',
+    modParents:'For Parents', modParentsSub:'Articles & guides',
+    pickSound:'Pick a Sound', pickTwister:'Pick a Twister', pickSentence:'Pick a Topic',
+    words:'words', twisters:'twisters', sentences:'sentences',
+    sayWord:'Say this out loud! 📢',
+    showTip:'💡 Show tip', hideTip:'💡 Hide tip',
+    tapSpeak:'🎤 Tap to Speak!', listening:'🎤 Listening...',
+    demoMode:'Skip mic (demo)',
+    nextWord:'Next →', tryAgain:'Try Again 🔄', backToList:'Back to list',
+    checking:'Checking your speech...',
+    heard:'Heard', target:'Target',
+    myProgress:'My Progress',
+    soundCategories:'SOUND CATEGORIES',
+    parentNote:'👨‍👩‍👧 Parent Note',
+    parentDefault:'Start practicing to build progress! Aim for 5–10 words per day.',
+    parentActive:(n)=>`Great work! ${n} items practiced. Daily 5–10 min sessions show the best improvement.`,
+    instructions:'Tap the button, say the word clearly, get feedback!',
+    articlesCtaTitle:'📚 Parents: Get the full guide',
+    articlesCtaText:'Free articles on speech development',
+    articlesCtaLink:'Read articles →',
+    srLang:'en-US',
+    aiPrompt:(type,target,spoken,hint)=>`You are a warm speech therapy assistant for children 4-10. The child practicing ${type} attempted: "${target}". Mic heard: "${spoken}". Tip: "${hint}". Be encouraging. Stars: 3=very close, 2=good effort, 1=keep trying. Bias to 2-3.\nRespond ONLY JSON: {"message":"2 short encouraging sentences IN ENGLISH","tip":"one kid-friendly pronunciation tip IN ENGLISH","stars":2,"celebEmoji":"🎉"}`,
+  },
+  es: {
+    appName:'¡HablaEstrella!', tagline:'¡Practica hablar — gana estrellas! ⭐',
+    startBtn:'¡Empezar! 🎤', progressBtn:'Mi Progreso 📊',
+    stars:'Estrellas', practiced:'Practicadas', mastered:'Dominadas',
+    pickModule:'Elige un Módulo',
+    modSounds:'Sonidos', modSoundsSub:'Practica letras difíciles',
+    modTwisters:'Trabalenguas', modTwistersSub:'Retos divertidos',
+    modSentences:'Frases', modSentencesSub:'Habla en oraciones',
+    modParents:'Para Padres', modParentsSub:'Artículos y guías',
+    pickSound:'Elige un Sonido', pickTwister:'Elige un Trabalenguas', pickSentence:'Elige un Tema',
+    words:'palabras', twisters:'trabalenguas', sentences:'frases',
+    sayWord:'¡Di esto en voz alta! 📢',
+    showTip:'💡 Ver consejo', hideTip:'💡 Ocultar consejo',
+    tapSpeak:'🎤 ¡Toca para hablar!', listening:'🎤 Escuchando...',
+    demoMode:'Modo demo (sin micrófono)',
+    nextWord:'Siguiente →', tryAgain:'Intentar de nuevo 🔄', backToList:'Volver',
+    checking:'Analizando tu voz...',
+    heard:'Escuché', target:'Objetivo',
+    myProgress:'Mi Progreso',
+    soundCategories:'CATEGORÍAS',
+    parentNote:'👨‍👩‍👧 Nota para padres',
+    parentDefault:'¡Empieza a practicar! Intenta 5–10 palabras al día.',
+    parentActive:(n)=>`¡Excelente! ${n} elementos practicados. La práctica diaria de 5–10 minutos muestra la mejor mejora.`,
+    instructions:'¡Toca el botón, di la palabra, recibe retroalimentación!',
+    articlesCtaTitle:'📚 Padres: Lee nuestra guía',
+    articlesCtaText:'Artículos gratuitos sobre desarrollo del habla',
+    articlesCtaLink:'Leer artículos →',
+    srLang:'es-MX',
+    aiPrompt:(type,target,spoken,hint)=>`Eres un asistente cálido de terapia del habla para niños de 4 a 10 años. El niño practicando ${type} intentó: "${target}". El micrófono escuchó: "${spoken}". Consejo: "${hint}". Sé alentador. Estrellas: 3=muy cerca, 2=buen esfuerzo, 1=sigue intentando. Inclínate por 2-3.\nResponde SOLO JSON: {"message":"2 frases cortas de aliento EN ESPAÑOL","tip":"un consejo de pronunciación EN ESPAÑOL","stars":2,"celebEmoji":"🎉"}`,
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//   SOUND CATEGORIES (EXPANDED — 10+ words each)
+// ═══════════════════════════════════════════════════════════════════════════
+const CATEGORIES = {
+  en: [
+    { id:'s', label:'S Sound', emoji:'🐍', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Make your teeth touch and blow air gently — like a snake hissing!',
+      words:[{w:'sun',e:'☀️'},{w:'snake',e:'🐍'},{w:'star',e:'⭐'},{w:'smile',e:'😊'},{w:'soap',e:'🧼'},
+             {w:'sand',e:'🏖️'},{w:'sock',e:'🧦'},{w:'soup',e:'🍲'},{w:'saw',e:'🪚'},{w:'seal',e:'🦭'}] },
+    { id:'r', label:'R Sound', emoji:'🌈', color:'#00B4D8', bg:'#E8F7FB',
+      hint:"Curl your tongue back a little — don't let it touch your teeth!",
+      words:[{w:'rabbit',e:'🐰'},{w:'rainbow',e:'🌈'},{w:'rocket',e:'🚀'},{w:'robot',e:'🤖'},{w:'rose',e:'🌹'},
+             {w:'red',e:'🔴'},{w:'rain',e:'🌧️'},{w:'ring',e:'💍'},{w:'rope',e:'🪢'},{w:'rock',e:'🪨'}] },
+    { id:'l', label:'L Sound', emoji:'🦁', color:'#F5A623', bg:'#FEF9EE',
+      hint:'Touch the tip of your tongue to the top of your mouth, just behind your front teeth!',
+      words:[{w:'lion',e:'🦁'},{w:'leaf',e:'🍃'},{w:'lamp',e:'💡'},{w:'ladybug',e:'🐞'},{w:'lemon',e:'🍋'},
+             {w:'leg',e:'🦵'},{w:'lake',e:'🏞️'},{w:'lock',e:'🔒'},{w:'lollipop',e:'🍭'},{w:'leopard',e:'🐆'}] },
+    { id:'th', label:'TH Sound', emoji:'🦷', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'Stick your tongue out just a tiny bit between your teeth and blow!',
+      words:[{w:'three',e:'3️⃣'},{w:'thumb',e:'👍'},{w:'thunder',e:'⛈️'},{w:'think',e:'💭'},{w:'thread',e:'🧵'},
+             {w:'throne',e:'👑'},{w:'thirty',e:'3️⃣'},{w:'thorn',e:'🌹'},{w:'thick',e:'📚'},{w:'thirsty',e:'💧'}] },
+    { id:'sh', label:'SH Sound', emoji:'🐚', color:'#06D6A0', bg:'#EAFBF6',
+      hint:"Round your lips a little and blow — like you're telling someone to be quiet!",
+      words:[{w:'ship',e:'🚢'},{w:'shoe',e:'👟'},{w:'shark',e:'🦈'},{w:'shell',e:'🐚'},{w:'sheep',e:'🐑'},
+             {w:'shirt',e:'👕'},{w:'shovel',e:'🔱'},{w:'shower',e:'🚿'},{w:'shop',e:'🛒'},{w:'shine',e:'✨'}] },
+    { id:'ch', label:'CH Sound', emoji:'🚂', color:'#F72585', bg:'#FEE8F2',
+      hint:'Put your teeth together and make a little puff of air — like a train starting!',
+      words:[{w:'chair',e:'🪑'},{w:'cheese',e:'🧀'},{w:'chicken',e:'🐔'},{w:'cherry',e:'🍒'},{w:'chocolate',e:'🍫'},
+             {w:'chip',e:'🍟'},{w:'church',e:'⛪'},{w:'cheek',e:'😊'},{w:'chest',e:'📦'},{w:'chain',e:'⛓️'}] },
+    { id:'b', label:'B Sound', emoji:'🎈', color:'#3A86FF', bg:'#EEF4FF',
+      hint:'Press your lips together and pop them open with your voice on!',
+      words:[{w:'ball',e:'⚽'},{w:'bear',e:'🐻'},{w:'banana',e:'🍌'},{w:'bird',e:'🐦'},{w:'boat',e:'⛵'},
+             {w:'book',e:'📚'},{w:'bus',e:'🚌'},{w:'baby',e:'👶'},{w:'bee',e:'🐝'},{w:'bowl',e:'🥣'}] },
+    { id:'p', label:'P Sound', emoji:'🐧', color:'#C77DFF', bg:'#F5EEFF',
+      hint:'Press your lips together and pop them open — like B but without your voice!',
+      words:[{w:'pig',e:'🐷'},{w:'pizza',e:'🍕'},{w:'penguin',e:'🐧'},{w:'pear',e:'🍐'},{w:'purple',e:'💜'},
+             {w:'pen',e:'🖊️'},{w:'panda',e:'🐼'},{w:'pumpkin',e:'🎃'},{w:'paint',e:'🎨'},{w:'pony',e:'🐴'}] },
+  ],
+  es: [
+    { id:'rr', label:'Sonido RR', emoji:'🐯', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Pon la punta de tu lengua detrás de los dientes de arriba y hazla vibrar — ¡como un motor!',
+      words:[{w:'perro',e:'🐕'},{w:'tierra',e:'🌍'},{w:'carro',e:'🚗'},{w:'arroz',e:'🍚'},{w:'guitarra',e:'🎸'},
+             {w:'torre',e:'🗼'},{w:'gorra',e:'🧢'},{w:'burro',e:'🫏'},{w:'cigarra',e:'🦗'},{w:'ferrocarril',e:'🚂'}] },
+    { id:'n_t', label:'Sonido Ñ', emoji:'🇲🇽', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'Pon tu lengua en el paladar como para la N, ¡pero apriétala un poco más!',
+      words:[{w:'niño',e:'👦'},{w:'piña',e:'🍍'},{w:'baño',e:'🛁'},{w:'año',e:'📅'},{w:'mañana',e:'🌅'},
+             {w:'montaña',e:'⛰️'},{w:'pequeño',e:'🐭'},{w:'español',e:'🇪🇸'},{w:'otoño',e:'🍂'},{w:'señor',e:'👨'}] },
+    { id:'s_es', label:'Sonido S', emoji:'🐍', color:'#00B4D8', bg:'#E8F7FB',
+      hint:'Junta los dientes suavemente y sopla el aire — ¡como una serpiente!',
+      words:[{w:'sol',e:'☀️'},{w:'sopa',e:'🍲'},{w:'sapo',e:'🐸'},{w:'silla',e:'🪑'},{w:'sirena',e:'🧜'},
+             {w:'sandía',e:'🍉'},{w:'serpiente',e:'🐍'},{w:'salsa',e:'🌶️'},{w:'suelo',e:'🟫'},{w:'semana',e:'📅'}] },
+    { id:'ll', label:'Sonido LL', emoji:'🌧️', color:'#06D6A0', bg:'#EAFBF6',
+      hint:'Coloca tu lengua en el centro del paladar y deja salir el aire por los lados.',
+      words:[{w:'lluvia',e:'🌧️'},{w:'llama',e:'🦙'},{w:'llave',e:'🔑'},{w:'pollo',e:'🍗'},{w:'sello',e:'📬'},
+             {w:'caballo',e:'🐴'},{w:'calle',e:'🛣️'},{w:'gallo',e:'🐓'},{w:'cebolla',e:'🧅'},{w:'galleta',e:'🍪'}] },
+    { id:'j', label:'Sonido J', emoji:'🦒', color:'#F5A623', bg:'#FEF9EE',
+      hint:'Haz un sonido suave en la garganta, como si hicieras gárgaras muy suaves.',
+      words:[{w:'jirafa',e:'🦒'},{w:'ojo',e:'👁️'},{w:'jugo',e:'🧃'},{w:'rojo',e:'🔴'},{w:'reloj',e:'⌚'},
+             {w:'jardín',e:'🌳'},{w:'conejo',e:'🐰'},{w:'abeja',e:'🐝'},{w:'hijo',e:'👶'},{w:'dibujo',e:'🎨'}] },
+    { id:'d_es', label:'Sonido D', emoji:'🦷', color:'#F72585', bg:'#FEE8F2',
+      hint:'Pon la punta de tu lengua detrás de los dientes superiores y tócalos suavemente.',
+      words:[{w:'dedo',e:'👆'},{w:'dado',e:'🎲'},{w:'disco',e:'💿'},{w:'duende',e:'🧝'},{w:'dulce',e:'🍬'},
+             {w:'dragón',e:'🐲'},{w:'delfín',e:'🐬'},{w:'dormir',e:'😴'},{w:'doctor',e:'👨‍⚕️'},{w:'dinosaurio',e:'🦕'}] },
+    { id:'b_es', label:'Sonido B/V', emoji:'🎈', color:'#3A86FF', bg:'#EEF4FF',
+      hint:'Junta los labios y ábrelos con voz — la B y la V suenan casi igual en español.',
+      words:[{w:'barco',e:'⛵'},{w:'vaca',e:'🐄'},{w:'bota',e:'👢'},{w:'ventana',e:'🪟'},{w:'bebé',e:'👶'},
+             {w:'boca',e:'👄'},{w:'vino',e:'🍷'},{w:'búho',e:'🦉'},{w:'vampiro',e:'🧛'},{w:'banana',e:'🍌'}] },
+    { id:'p_es', label:'Sonido P', emoji:'🐧', color:'#C77DFF', bg:'#F5EEFF',
+      hint:'Junta los labios y ábrelos de golpe — ¡sin vibrar la garganta!',
+      words:[{w:'papá',e:'👨'},{w:'pato',e:'🦆'},{w:'piña',e:'🍍'},{w:'pulpo',e:'🐙'},{w:'pelota',e:'⚽'},
+             {w:'panda',e:'🐼'},{w:'pera',e:'🍐'},{w:'plato',e:'🍽️'},{w:'payaso',e:'🤡'},{w:'panqueque',e:'🥞'}] },
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//   TONGUE TWISTERS (TRABALENGUAS) — NEW MODULE
+// ═══════════════════════════════════════════════════════════════════════════
+const TWISTERS = {
+  en: [
+    { id:'t1', label:'Easy Peasy', emoji:'🐝', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Say it slowly first, then a little faster each time!',
+      sounds:'B/S', items:[
+        {w:'Big bees buzz',e:'🐝'},
+        {w:'Six sleek sheep',e:'🐑'},
+        {w:'Red lorry, yellow lorry',e:'🚚'},
+        {w:'Toy boat, toy boat',e:'⛵'},
+        {w:'Unique New York',e:'🗽'},
+    ]},
+    { id:'t2', label:'Peter Piper', emoji:'🌶️', color:'#06D6A0', bg:'#EAFBF6',
+      hint:'Classic P sound twister — pop those lips!',
+      sounds:'P', items:[
+        {w:'Peter Piper picked a peck',e:'👨'},
+        {w:'A peck of pickled peppers',e:'🌶️'},
+        {w:'Peter Piper picked a peck of pickled peppers',e:'🌶️'},
+    ]},
+    { id:'t3', label:'She Sells Shells', emoji:'🐚', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'Focus on the SH sound, gentle and steady!',
+      sounds:'SH/S', items:[
+        {w:'She sells shells',e:'🐚'},
+        {w:'She sells shells by the seashore',e:'🌊'},
+        {w:'The shells she sells are seashells',e:'🐚'},
+    ]},
+    { id:'t4', label:'Woodchuck', emoji:'🪵', color:'#F5A623', bg:'#FEF9EE',
+      hint:'Watch your W and CH sounds!',
+      sounds:'W/CH', items:[
+        {w:'How much wood',e:'🪵'},
+        {w:'How much wood would a woodchuck chuck',e:'🦫'},
+        {w:'If a woodchuck could chuck wood',e:'🪵'},
+    ]},
+  ],
+  es: [
+    { id:'tr1', label:'Tres Tristes Tigres', emoji:'🐯', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Clásico de la R y la T — ¡di despacio primero!',
+      sounds:'TR/R', items:[
+        {w:'Tres tristes tigres',e:'🐯'},
+        {w:'Tragaban trigo',e:'🌾'},
+        {w:'Tres tristes tigres tragaban trigo',e:'🐯'},
+        {w:'En un trigal',e:'🌾'},
+    ]},
+    { id:'tr2', label:'Pablito Clavó', emoji:'🔨', color:'#06D6A0', bg:'#EAFBF6',
+      hint:'¡Practica la P y la Cl con ritmo!',
+      sounds:'P/CL', items:[
+        {w:'Pablito clavó un clavito',e:'🔨'},
+        {w:'Un clavito clavó Pablito',e:'🔨'},
+        {w:'Pablito clavó un clavito en la calva de un calvito',e:'👴'},
+    ]},
+    { id:'tr3', label:'Pepe Pecas', emoji:'🥔', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'¡Mucha P! Junta y separa los labios.',
+      sounds:'P', items:[
+        {w:'Pepe Pecas',e:'👨'},
+        {w:'Pica papas con un pico',e:'🥔'},
+        {w:'Pepe Pecas pica papas con un pico',e:'🥔'},
+    ]},
+    { id:'tr4', label:'Erre con Erre', emoji:'🚂', color:'#F72585', bg:'#FEE8F2',
+      hint:'¡El más famoso! Vibra la lengua para la RR.',
+      sounds:'RR/R', items:[
+        {w:'Erre con erre cigarro',e:'🚬'},
+        {w:'Erre con erre barril',e:'🛢️'},
+        {w:'Rápido corren los carros',e:'🚗'},
+        {w:'Por los rieles del ferrocarril',e:'🚂'},
+    ]},
+    { id:'tr5', label:'Mi Mamá Me Mima', emoji:'💕', color:'#3A86FF', bg:'#EEF4FF',
+      hint:'¡Súper fácil! Junta los labios para la M.',
+      sounds:'M', items:[
+        {w:'Mi mamá me mima',e:'💕'},
+        {w:'Mucho me mima mi mamá',e:'💕'},
+        {w:'¿Cómo cómo? ¡Como como!',e:'🍽️'},
+    ]},
+    { id:'tr6', label:'Cuando Cuentes', emoji:'🔢', color:'#F5A623', bg:'#FEF9EE',
+      hint:'La C suena fuerte, ¡como tos!',
+      sounds:'C', items:[
+        {w:'Cuando cuentes cuentos',e:'📖'},
+        {w:'Cuenta cuántos cuentos',e:'🔢'},
+        {w:'Cuenta cuántos cuentos cuentas',e:'📖'},
+    ]},
+    { id:'tr7', label:'Pancha Plancha', emoji:'👚', color:'#00B4D8', bg:'#E8F7FB',
+      hint:'¡Practica la P y la PL!',
+      sounds:'P/PL', items:[
+        {w:'Si Pancha plancha',e:'👚'},
+        {w:'Con cuatro planchas',e:'👚'},
+        {w:'¿Con cuántas planchas plancha Pancha?',e:'👚'},
+    ]},
+    { id:'tr8', label:'Como Como', emoji:'🍽️', color:'#C77DFF', bg:'#F5EEFF',
+      hint:'¡Trabalenguas corto y divertido!',
+      sounds:'C', items:[
+        {w:'Como poco coco como',e:'🥥'},
+        {w:'Poco coco compro',e:'🥥'},
+        {w:'Como poco coco como, poco coco compro',e:'🥥'},
+    ]},
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//   SENTENCES (FRASES) — NEW MODULE
+// ═══════════════════════════════════════════════════════════════════════════
+const SENTENCES = {
+  en: [
+    { id:'f1', label:'Family', emoji:'👨‍👩‍👧', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'Read each sentence at your own pace!',
+      items:[
+        {w:'I love my mom',e:'❤️'},
+        {w:'My dad is funny',e:'😄'},
+        {w:'I have a sister',e:'👧'},
+        {w:'My family is big',e:'👨‍👩‍👧‍👦'},
+        {w:'We eat together',e:'🍽️'},
+    ]},
+    { id:'f2', label:'School Day', emoji:'🎒', color:'#00B4D8', bg:'#E8F7FB',
+      hint:'Speak each sentence clearly!',
+      sounds:'S', items:[
+        {w:'I go to school',e:'🏫'},
+        {w:'My teacher is nice',e:'👩‍🏫'},
+        {w:'I draw with colors',e:'🎨'},
+        {w:'I read a book',e:'📚'},
+        {w:'We play at recess',e:'⚽'},
+    ]},
+    { id:'f3', label:'My Day', emoji:'☀️', color:'#F5A623', bg:'#FEF9EE',
+      hint:'Practice rhythm and flow!',
+      items:[
+        {w:'I wake up early',e:'⏰'},
+        {w:'I brush my teeth',e:'🦷'},
+        {w:'I eat breakfast',e:'🥣'},
+        {w:'I play with toys',e:'🧸'},
+        {w:'I sleep at night',e:'🌙'},
+    ]},
+    { id:'f4', label:'Animals', emoji:'🐶', color:'#06D6A0', bg:'#EAFBF6',
+      hint:'Have fun with animal sounds!',
+      items:[
+        {w:'The dog says woof',e:'🐶'},
+        {w:'The cat says meow',e:'🐱'},
+        {w:'The cow says moo',e:'🐄'},
+        {w:'The bird flies high',e:'🐦'},
+        {w:'The fish swims fast',e:'🐠'},
+    ]},
+  ],
+  es: [
+    { id:'fr1', label:'La Familia', emoji:'👨‍👩‍👧', color:'#FF6B35', bg:'#FFF0EB',
+      hint:'¡Lee cada frase a tu propio ritmo!',
+      items:[
+        {w:'Yo amo a mi mamá',e:'❤️'},
+        {w:'Mi papá es divertido',e:'😄'},
+        {w:'Tengo una hermana',e:'👧'},
+        {w:'Mi familia es grande',e:'👨‍👩‍👧‍👦'},
+        {w:'Comemos juntos',e:'🍽️'},
+        {w:'Mi abuela hace pan',e:'🍞'},
+    ]},
+    { id:'fr2', label:'En la Escuela', emoji:'🎒', color:'#00B4D8', bg:'#E8F7FB',
+      hint:'¡Habla cada frase claramente!',
+      items:[
+        {w:'Voy a la escuela',e:'🏫'},
+        {w:'Mi maestra es buena',e:'👩‍🏫'},
+        {w:'Dibujo con colores',e:'🎨'},
+        {w:'Leo un libro',e:'📚'},
+        {w:'Jugamos en el recreo',e:'⚽'},
+        {w:'Aprendo a leer',e:'📖'},
+    ]},
+    { id:'fr3', label:'Mi Día', emoji:'☀️', color:'#F5A623', bg:'#FEF9EE',
+      hint:'¡Practica el ritmo natural!',
+      items:[
+        {w:'Me levanto temprano',e:'⏰'},
+        {w:'Me lavo los dientes',e:'🦷'},
+        {w:'Desayuno cereal',e:'🥣'},
+        {w:'Juego con juguetes',e:'🧸'},
+        {w:'Duermo en la noche',e:'🌙'},
+        {w:'Veo la luna llena',e:'🌕'},
+    ]},
+    { id:'fr4', label:'Los Animales', emoji:'🐶', color:'#06D6A0', bg:'#EAFBF6',
+      hint:'¡Diviértete con los sonidos de animales!',
+      items:[
+        {w:'El perro dice guau',e:'🐶'},
+        {w:'El gato dice miau',e:'🐱'},
+        {w:'La vaca dice mu',e:'🐄'},
+        {w:'El pájaro vuela alto',e:'🐦'},
+        {w:'El pez nada rápido',e:'🐠'},
+        {w:'El león es grande',e:'🦁'},
+    ]},
+    { id:'fr5', label:'La Comida', emoji:'🍎', color:'#F72585', bg:'#FEE8F2',
+      hint:'¡Frases con sabor a México!',
+      items:[
+        {w:'Como tacos los martes',e:'🌮'},
+        {w:'Bebo agua de jamaica',e:'🍹'},
+        {w:'Me gusta el pan dulce',e:'🍞'},
+        {w:'La sopa está caliente',e:'🍲'},
+        {w:'Quiero un mango maduro',e:'🥭'},
+        {w:'Hago tortillas con mamá',e:'🌮'},
+    ]},
+    { id:'fr6', label:'Los Colores', emoji:'🌈', color:'#9B5DE5', bg:'#F3EFFE',
+      hint:'¡Aprende colores hablando!',
+      items:[
+        {w:'El sol es amarillo',e:'☀️'},
+        {w:'El cielo es azul',e:'☁️'},
+        {w:'La hierba es verde',e:'🌱'},
+        {w:'La manzana es roja',e:'🍎'},
+        {w:'La uva es morada',e:'🍇'},
+        {w:'La nieve es blanca',e:'❄️'},
+    ]},
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//   OFFLINE FEEDBACK
+// ═══════════════════════════════════════════════════════════════════════════
+const OFFLINE = {
+  en: [
+    { message:"Awesome try! You're getting better every time. ⭐", tip:'Say it slowly, one sound at a time.', stars:3, celebEmoji:'🌟' },
+    { message:'Way to go! Your hard work is paying off!', tip:'Try saying it in front of a mirror.', stars:2, celebEmoji:'🎉' },
+    { message:"You're a superstar! Keep it up!", tip:'Take a deep breath before you speak.', stars:3, celebEmoji:'⭐' },
+    { message:'Great job! That was a really good try.', tip:'Listen carefully — does it sound right? Try once more!', stars:2, celebEmoji:'🎊' },
+    { message:'Wonderful! Every practice makes you stronger.', tip:'Slow down and feel where your tongue and lips go.', stars:3, celebEmoji:'💪' },
+  ],
+  es: [
+    { message:'¡Buen intento! Cada vez lo haces mejor. ⭐', tip:'Dilo despacio, un sonido a la vez.', stars:3, celebEmoji:'🌟' },
+    { message:'¡Muy bien! ¡Tu esfuerzo está dando resultado!', tip:'Mírate en un espejo mientras lo dices.', stars:2, celebEmoji:'🎉' },
+    { message:'¡Eres una superestrella! ¡Sigue así!', tip:'Respira profundo antes de hablar.', stars:3, celebEmoji:'⭐' },
+    { message:'¡Excelente! Fue un intento muy bueno.', tip:'¿Te oíste bien? ¡Inténtalo otra vez!', stars:2, celebEmoji:'🎊' },
+    { message:'¡Maravilloso! Con cada práctica te haces más fuerte.', tip:'Despacio — siente dónde van tu lengua y tus labios.', stars:3, celebEmoji:'💪' },
+  ]
+};
